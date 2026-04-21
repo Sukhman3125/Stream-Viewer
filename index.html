@@ -2,28 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Stream Viewer (By Sukhman)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StreamHub — Your Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg: #080c10; --panel: #0d1117; --border: #1e2d3d;
-      --accent: #00e5ff; --accent2: #ff3cac; --accent3: #7b2ff7;
-      --text: #c9d1d9; --text-dim: #4a5568;
+      --bg: #080c10;
+      --panel: #0d1117;
+      --border: #1e2d3d;
+      --accent: #00e5ff;
+      --accent2: #ff3cac;
+      --accent3: #7b2ff7;
+      --text: #c9d1d9;
+      --text-dim: #4a5568;
       --glow: 0 0 12px rgba(0,229,255,0.35);
       --glow2: 0 0 12px rgba(255,60,172,0.35);
-      --handle: 10px; /* Slightly thicker for touch targets */
-      --safe-top: 32px;
+      --handle: 6px;
     }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    
+
     body {
       font-family: 'Exo 2', sans-serif;
-      background: var(--bg); color: var(--text);
-      height: 100vh; 
-      height: 100dvh; /* Fix for mobile browser bars */
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
       overflow: hidden;
-      display: flex; flex-direction: column;
+      display: flex;
+      flex-direction: column;
     }
 
     /* ── SETUP MODAL ── */
@@ -31,375 +37,711 @@
       position: fixed; inset: 0;
       background: rgba(8,12,16,0.97);
       display: flex; align-items: center; justify-content: center;
-      z-index: 999; backdrop-filter: blur(6px);
+      z-index: 999;
+      backdrop-filter: blur(6px);
     }
     #setup-overlay.hidden { display: none; }
+
     .setup-card {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 16px; padding: 30px;
-      width: 520px; max-width: 90vw; max-height: 85vh; overflow-y: auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 480px;
+      max-width: 95vw;
       position: relative;
+      overflow: hidden;
     }
     .setup-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
       background: linear-gradient(90deg, var(--accent3), var(--accent), var(--accent2));
-      border-radius: 16px 16px 0 0;
     }
     .setup-card h1 {
-      font-family: 'Rajdhani', sans-serif; font-size: 1.5rem; font-weight: 700;
-      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
       background: linear-gradient(90deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-
-    .section-heading {
-      font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
-      letter-spacing: 2px; text-transform: uppercase; color: var(--accent3);
-      padding: 6px 0; border-bottom: 1px solid var(--border);
-      margin: 20px 0 10px;
+    .setup-card p {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin-bottom: 32px;
     }
-
-    .tutorial-box {
-      font-size: 0.75rem; line-height: 1.5; color: var(--text-dim);
-      background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border-left: 2px solid var(--accent3);
+    .input-group {
+      margin-bottom: 20px;
     }
-
-    .input-group { margin-bottom: 12px; }
     .input-group label {
-      display: block; font-family: 'Share Tech Mono', monospace;
-      font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px;
+      display: block;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 8px;
     }
     .input-group input {
-      width: 100%; background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border); border-radius: 6px;
-      padding: 10px; color: var(--text);
-      font-family: 'Share Tech Mono', monospace; font-size: 0.8rem;
+      width: 100%;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-group input:focus {
+      border-color: var(--accent);
+      box-shadow: var(--glow);
+    }
+    .input-group input::placeholder { color: var(--text-dim); }
+
+    .setup-hint {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin-top: 6px;
+      font-family: 'Share Tech Mono', monospace;
     }
 
     .btn-launch {
-      width: 100%; margin-top: 20px; padding: 14px;
+      width: 100%;
+      margin-top: 28px;
+      padding: 14px;
       background: linear-gradient(135deg, var(--accent3), var(--accent));
-      border: none; border-radius: 8px; color: #fff;
-      font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700;
-      letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
     }
+    .btn-launch:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-launch:active { transform: translateY(0); }
 
     /* ── TOP BAR ── */
     #topbar {
-      height: 48px; background: var(--panel);
+      height: 42px;
+      background: var(--panel);
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center;
-      padding: 0 12px; gap: 10px; flex-shrink: 0; z-index: 100;
+      padding: 0 16px;
+      gap: 16px;
+      flex-shrink: 0;
+      z-index: 10;
     }
     .logo {
-      font-family: 'Rajdhani', sans-serif; font-size: 0.9rem;
-      font-weight: 700; letter-spacing: 1px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 3px;
       background: linear-gradient(90deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
     .live-pill {
-      display: flex; align-items: center; gap: 4px;
-      background: rgba(255,60,60,0.1); border: 1px solid rgba(255,60,60,0.3);
-      border-radius: 4px; padding: 2px 6px;
-      font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: #ff5555;
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,60,60,0.12);
+      border: 1px solid rgba(255,60,60,0.35);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: #ff5555;
+      letter-spacing: 1px;
     }
-    .live-dot { width:6px; height:6px; border-radius:50%; background:#ff5555; animation:pulse 1.4s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-    #fetch-status { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-dim); }
-    .topbar-right { margin-left:auto; display:flex; gap:6px; }
-    .btn-sm {
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 4px;
-      color: var(--text); padding: 4px 8px; font-size: 0.6rem; cursor: pointer;
+    .live-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #ff5555;
+      animation: pulse 1.4s infinite;
     }
+    @keyframes pulse {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .topbar-right {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .btn-settings {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-dim);
+      padding: 4px 12px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-settings:hover { border-color: var(--accent); color: var(--accent); }
 
     /* ── MAIN LAYOUT ── */
-    #main { flex:1; display:flex; min-height:0; position: relative; }
-    #left-col { display:flex; flex-direction:column; flex: 1; min-width: 100px; }
-    
-    #h-drag { 
-      width:var(--handle); background:var(--border); cursor: col-resize; z-index: 50; 
-      touch-action: none; transition: background 0.2s;
+    #main {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
     }
-    #v-drag { 
-      height:var(--handle); background:var(--border); cursor: row-resize; z-index: 50; 
-      touch-action: none; transition: background 0.2s;
+
+    /* Left column */
+    #left-col {
+      display: flex;
+      flex-direction: column;
+      min-width: 200px;
+      max-width: 80vw;
+      width: 62%;
+      overflow: hidden;
+    }
+
+    /* Horizontal drag handle between left and right */
+    #h-drag {
+      width: var(--handle);
+      cursor: col-resize;
+      background: var(--border);
+      position: relative;
+      flex-shrink: 0;
+      transition: background 0.2s;
+      z-index: 5;
     }
     #h-drag:hover, #h-drag.dragging { background: var(--accent); box-shadow: var(--glow); }
-    #v-drag:hover, #v-drag.dragging { background: var(--accent2); box-shadow: var(--glow2); }
-
-    #right-col { width: 30%; flex-shrink: 0; display: flex; flex-direction: column; }
-    #top-panel { height: 50%; min-height: 100px; position: relative; }
-    #bottom-panel { flex: 1; min-height: 100px; position: relative; }
-
-    /* For smooth dragging (disables iframe interaction) */
-    body.is-dragging iframe { pointer-events: none !important; }
-
-    .panel { width:100%; height:100%; background:var(--panel); position:relative; overflow:hidden; }
-    .panel-label {
-      position: absolute; top: 6px; left: 8px;
-      font-family:'Share Tech Mono',monospace; font-size:0.55rem;
-      z-index:10; padding:2px 6px; border-radius:3px;
-      background: rgba(8, 12, 16, 0.8); border: 1px solid rgba(255,255,255,0.1);
+    #h-drag::after {
+      content: '⋮';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      color: var(--text-dim);
+      font-size: 14px;
+      pointer-events: none;
     }
-    .cyan { color: var(--accent); } .pink { color: var(--accent2); } .purple { color: #b77fff; }
 
-    .panel-content { width: 100%; height: 100%; padding-top: var(--safe-top); position: relative; }
-    .stream-frame { width:100%; height:100%; border:none; }
-    
-    #dual-chat-container { display: flex; width: 100%; height: 100%; gap: 1px; background: var(--border); }
-    .chat-half { flex: 1; position: relative; background: var(--panel); min-width: 0; }
-    .chat-frame { width: 100%; height: 100%; border: none; }
+    /* Right column — vertical stream */
+    #right-col {
+      flex: 1;
+      min-width: 150px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
 
-    .placeholder { position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; opacity: 0.2; pointer-events: none; }
+    /* Top section — horizontal stream */
+    #top-panel {
+      min-height: 80px;
+      max-height: 85%;
+      height: 55%;
+      overflow: hidden;
+      position: relative;
+    }
 
-    /* ── RESPONSIVE MOBILE FIXES ── */
-    @media (max-width: 800px) {
-      #main { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
-      #h-drag { display: none; }
-      #right-col { width: 100% !important; height: 450px; flex-shrink: 0; }
-      #left-col { height: auto; flex: none; }
-      #top-panel { height: 300px !important; }
-      #bottom-panel { height: 400px !important; }
-      body { overflow: auto; }
+    /* Vertical drag handle */
+    #v-drag {
+      height: var(--handle);
+      cursor: row-resize;
+      background: var(--border);
+      position: relative;
+      flex-shrink: 0;
+      transition: background 0.2s;
+      z-index: 5;
+    }
+    #v-drag:hover, #v-drag.dragging { background: var(--accent2); box-shadow: var(--glow2); }
+    #v-drag::after {
+      content: '···';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      color: var(--text-dim);
+      font-size: 14px;
+      pointer-events: none;
+      letter-spacing: 2px;
+    }
+
+    /* Bottom section — chat */
+    #bottom-panel {
+      flex: 1;
+      min-height: 80px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── PANEL STYLES ── */
+    .panel {
+      width: 100%; height: 100%;
+      background: var(--panel);
+      position: relative;
+      overflow: hidden;
+    }
+    .panel-label {
+      position: absolute;
+      top: 10px; left: 12px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      z-index: 2;
+      padding: 3px 8px;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+    .panel-label.cyan {
+      color: var(--accent);
+      background: rgba(0,229,255,0.07);
+      border: 1px solid rgba(0,229,255,0.2);
+    }
+    .panel-label.pink {
+      color: var(--accent2);
+      background: rgba(255,60,172,0.07);
+      border: 1px solid rgba(255,60,172,0.2);
+    }
+    .panel-label.purple {
+      color: #b77fff;
+      background: rgba(123,47,247,0.1);
+      border: 1px solid rgba(123,47,247,0.25);
+    }
+
+    /* Grid overlay texture */
+    .panel::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* iframe embeds */
+    .stream-frame {
+      width: 100%; height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Placeholder states */
+    .placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px;
+      position: relative; z-index: 1;
+    }
+    .placeholder-icon {
+      font-size: 2.5rem;
+      opacity: 0.2;
+    }
+    .placeholder-text {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* ── CHAT PANEL ── */
+    #chat-container {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      position: relative; z-index: 1;
+    }
+    #chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 36px 12px 12px;
+      display: flex; flex-direction: column; gap: 8px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .chat-msg {
+      display: flex; gap: 8px;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      animation: slideIn 0.25s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .chat-avatar {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+    }
+    .chat-author {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .chat-text { color: var(--text); }
+
+    #chat-input-row {
+      display: flex; gap: 8px;
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+      background: rgba(0,0,0,0.3);
+    }
+    #chat-input {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 12px;
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #chat-input:focus { border-color: var(--accent2); }
+    #chat-send {
+      background: var(--accent2);
+      border: none;
+      border-radius: 6px;
+      padding: 0 14px;
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    #chat-send:hover { opacity: 0.85; }
+
+    /* Corner scanline effect */
+    .panel::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.4;
+      animation: scanline 4s linear infinite;
+      pointer-events: none;
+      z-index: 3;
+    }
+    @keyframes scanline {
+      0% { transform: translateY(0); opacity: 0.4; }
+      50% { opacity: 0.1; }
+      100% { transform: translateY(100vh); opacity: 0; }
     }
   </style>
 </head>
-<body id="app-body">
+<body>
 
+<!-- ══ SETUP MODAL ══ -->
 <div id="setup-overlay">
   <div class="setup-card">
-    <h1>Dashboard Config</h1>
-    
-    <div class="tutorial-box">
-      <strong>Mobile/Tab User:</strong> Use the colored bars between windows to resize. If on phone, panels stack vertically for better visibility.
+    <h1>StreamHub</h1>
+    <p>Enter your stream details to launch your dashboard.</p>
+
+    <div class="input-group">
+      <label>YouTube Channel ID or Handle</label>
+      <input id="yt-channel" type="text" placeholder="@yourchannel or UCxxxxxx" />
+      <div class="setup-hint">Used to embed your live horizontal stream.</div>
     </div>
 
-    <div class="section-heading">⚡ YouTube API (Auto)</div>
     <div class="input-group">
-      <label>Channel ID</label>
-      <input id="yt-channel-id" type="text" placeholder="UC..." />
-    </div>
-    <div class="input-group">
-      <label>API Key</label>
-      <input id="yt-api-key" type="password" placeholder="AIza..." />
+      <label>Vertical Stream Embed URL</label>
+      <input id="vertical-url" type="text" placeholder="https://youtube.com/embed/LIVE_VIDEO_ID" />
+      <div class="setup-hint">Paste the direct embed URL of your vertical/secondary stream.</div>
     </div>
 
-    <div class="section-heading">🔧 Manual IDs (Fallback)</div>
     <div class="input-group">
-      <label>Horizontal ID</label>
-      <input id="manual-horiz" type="text" />
-    </div>
-    <div class="input-group">
-      <label>Vertical ID</label>
-      <input id="manual-vert" type="text" />
+      <label>Chat Source URL (Streamlabs / StreamElements)</label>
+      <input id="chat-url" type="text" placeholder="https://streamlabs.com/widgets/chat-box/v1/YOUR_TOKEN" />
+      <div class="setup-hint">Paste your Streamlabs or StreamElements chat overlay URL.</div>
     </div>
 
-    <button class="btn-launch" onclick="launchDashboard()">⚡ Save & Launch</button>
+    <button class="btn-launch" onclick="launchDashboard()">⚡ Launch Dashboard</button>
   </div>
 </div>
 
+<!-- ══ TOP BAR ══ -->
 <div id="topbar">
-  <span class="logo">Stream Viewer</span>
+  <span class="logo">STREAMHUB</span>
   <div class="live-pill"><span class="live-dot"></span>LIVE</div>
-  <span id="fetch-status">READY</span>
   <div class="topbar-right">
-    <button class="btn-sm" onclick="refreshStreams()">↻ SYNC</button>
-    <button class="btn-sm" onclick="showSetup()">⚙ SETTINGS</button>
+    <button class="btn-settings" onclick="showSetup()">⚙ EDIT SOURCES</button>
   </div>
 </div>
 
+<!-- ══ MAIN LAYOUT ══ -->
 <div id="main">
+
+  <!-- LEFT COLUMN -->
   <div id="left-col">
+
+    <!-- TOP PANEL: Horizontal Stream -->
     <div id="top-panel">
-      <div class="panel">
-        <span class="panel-label cyan">▶ HORIZONTAL</span>
-        <div class="panel-content">
-          <div class="placeholder" id="horiz-placeholder">📺</div>
-          <iframe id="horiz-frame" class="stream-frame" style="display:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+      <div class="panel" id="horiz-panel">
+        <span class="panel-label cyan">▶ HORIZONTAL STREAM</span>
+        <div class="placeholder" id="horiz-placeholder">
+          <div class="placeholder-icon">📺</div>
+          <div class="placeholder-text">Horizontal stream will appear here<br/>when you go live on YouTube</div>
         </div>
+        <iframe id="horiz-frame" class="stream-frame" style="display:none;" allowfullscreen></iframe>
       </div>
     </div>
-    
+
+    <!-- VERTICAL DRAG HANDLE -->
     <div id="v-drag"></div>
-    
+
+    <!-- BOTTOM PANEL: Chat -->
     <div id="bottom-panel">
-      <div class="panel">
-        <span class="panel-label pink" style="left: 8px;">💬 CHAT (H)</span>
-        <span class="panel-label purple" style="left: calc(50% + 8px);">💬 CHAT (V)</span>
-        <div id="dual-chat-container">
-          <div class="chat-half">
-            <iframe id="chat-horiz-frame" class="chat-frame" style="display:none;"></iframe>
+      <div class="panel" id="chat-panel">
+        <span class="panel-label pink">💬 LIVE CHAT</span>
+        <!-- Streamlabs chat iframe (if URL provided) -->
+        <iframe id="chat-frame" class="stream-frame" style="display:none;" allowfullscreen></iframe>
+        <!-- Fallback internal chat -->
+        <div id="chat-container" style="display:none;">
+          <div id="chat-messages"></div>
+          <div id="chat-input-row">
+            <input id="chat-input" type="text" placeholder="Say something..." onkeydown="if(event.key==='Enter')sendChat()" />
+            <button id="chat-send" onclick="sendChat()">SEND</button>
           </div>
-          <div class="chat-half">
-            <iframe id="chat-vert-frame" class="chat-frame" style="display:none;"></iframe>
-          </div>
+        </div>
+        <div class="placeholder" id="chat-placeholder">
+          <div class="placeholder-icon">💬</div>
+          <div class="placeholder-text">Chat will appear here<br/>Enter your Streamlabs chat URL to connect</div>
         </div>
       </div>
     </div>
+
   </div>
 
+  <!-- HORIZONTAL DRAG HANDLE -->
   <div id="h-drag"></div>
 
+  <!-- RIGHT COLUMN: Vertical Stream -->
   <div id="right-col">
-    <div class="panel">
-      <span class="panel-label purple">📱 VERTICAL</span>
-      <div class="panel-content">
-        <div class="placeholder" id="vert-placeholder">📱</div>
-        <iframe id="vert-frame" class="stream-frame" style="display:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    <div class="panel" style="height:100%;" id="vert-panel">
+      <span class="panel-label purple">📱 VERTICAL STREAM</span>
+      <div class="placeholder" id="vert-placeholder">
+        <div class="placeholder-icon">📱</div>
+        <div class="placeholder-text">Vertical stream<br/>will appear here</div>
       </div>
+      <iframe id="vert-frame" class="stream-frame" style="display:none;" allowfullscreen></iframe>
     </div>
   </div>
+
 </div>
 
 <script>
-  const STORE_KEY = 'streamhub_v4';
-  let cfg = {};
-  let pollTimer = null;
+  // ── Persist & restore settings ──
+  const STORE_KEY = 'streamhub_config';
 
-  function save() { localStorage.setItem(STORE_KEY, JSON.stringify(cfg)); }
-  function loadCfg() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; } }
+  function saveConfig(cfg) {
+    localStorage.setItem(STORE_KEY, JSON.stringify(cfg));
+  }
+  function loadConfig() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; }
+  }
 
   window.onload = () => {
-    cfg = loadCfg();
-    if (cfg.ytChannelId || cfg.manualHoriz || cfg.manualVert) {
-      restoreForm();
-      applyConfig();
+    const cfg = loadConfig();
+    if (cfg.ytChannel || cfg.vertUrl || cfg.chatUrl) {
+      // Pre-fill fields
+      document.getElementById('yt-channel').value = cfg.ytChannel || '';
+      document.getElementById('vertical-url').value = cfg.vertUrl || '';
+      document.getElementById('chat-url').value = cfg.chatUrl || '';
+      // Auto-launch
+      applyConfig(cfg);
       document.getElementById('setup-overlay').classList.add('hidden');
     }
     initDrag();
+    startDemoChat();
   };
 
-  function restoreForm() {
-    document.getElementById('yt-channel-id').value = cfg.ytChannelId || '';
-    document.getElementById('yt-api-key').value = cfg.ytApiKey || '';
-    document.getElementById('manual-horiz').value = cfg.manualHoriz || '';
-    document.getElementById('manual-vert').value = cfg.manualVert || '';
+  function showSetup() {
+    document.getElementById('setup-overlay').classList.remove('hidden');
   }
 
-  function showSetup() { restoreForm(); document.getElementById('setup-overlay').classList.remove('hidden'); }
-
   function launchDashboard() {
-    cfg = {
-      ytChannelId: document.getElementById('yt-channel-id').value.trim(),
-      ytApiKey: document.getElementById('yt-api-key').value.trim(),
-      manualHoriz: extractVideoId(document.getElementById('manual-horiz').value.trim()),
-      manualVert: extractVideoId(document.getElementById('manual-vert').value.trim()),
+    const cfg = {
+      ytChannel: document.getElementById('yt-channel').value.trim(),
+      vertUrl: document.getElementById('vertical-url').value.trim(),
+      chatUrl: document.getElementById('chat-url').value.trim(),
     };
-    save();
-    applyConfig();
+    saveConfig(cfg);
+    applyConfig(cfg);
     document.getElementById('setup-overlay').classList.add('hidden');
   }
 
-  function extractVideoId(input) {
-    if (!input) return '';
-    const match = input.match(/(?:v=|\/embed\/|shorts\/|\.be\/)([^&?#]+)/);
-    return match ? match[1] : input;
-  }
+  function applyConfig(cfg) {
+    // Horizontal YouTube stream
+    if (cfg.ytChannel) {
+      // Build a YouTube search/live embed
+      let channelId = cfg.ytChannel.startsWith('@')
+        ? cfg.ytChannel
+        : cfg.ytChannel;
+      // Embed latest live via channel
+      const horizSrc = `https://www.youtube.com/embed/live_stream?channel=${channelId}&autoplay=1&mute=1`;
+      const horizFrame = document.getElementById('horiz-frame');
+      horizFrame.src = horizSrc;
+      horizFrame.style.display = 'block';
+      document.getElementById('horiz-placeholder').style.display = 'none';
+    }
 
-  function applyConfig() {
-    if (cfg.ytChannelId && cfg.ytApiKey) {
-      fetchLiveStreams();
-      if (pollTimer) clearInterval(pollTimer);
-      pollTimer = setInterval(fetchLiveStreams, 900000);
+    // Vertical stream
+    if (cfg.vertUrl) {
+      const vertFrame = document.getElementById('vert-frame');
+      vertFrame.src = cfg.vertUrl;
+      vertFrame.style.display = 'block';
+      document.getElementById('vert-placeholder').style.display = 'none';
+    }
+
+    // Chat
+    if (cfg.chatUrl) {
+      const chatFrame = document.getElementById('chat-frame');
+      chatFrame.src = cfg.chatUrl;
+      chatFrame.style.display = 'block';
+      document.getElementById('chat-placeholder').style.display = 'none';
+      document.getElementById('chat-container').style.display = 'none';
     } else {
-      if (cfg.manualHoriz) updatePanels('horiz', cfg.manualHoriz);
-      if (cfg.manualVert) updatePanels('vert', cfg.manualVert);
+      // Show internal demo chat
+      document.getElementById('chat-container').style.display = 'flex';
+      document.getElementById('chat-placeholder').style.display = 'none';
     }
   }
 
-  async function fetchLiveStreams() {
-    const { ytChannelId, ytApiKey } = cfg;
-    setStatus(`⟳ Syncing...`);
-    try {
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${ytChannelId}&eventType=live&type=video&maxResults=3&key=${ytApiKey}`);
-      const data = await res.json();
-      if (data.items && data.items.length > 0) {
-        // Logic to distinguish H vs V would go here based on snippet, 
-        // for now we'll map first to H and second to V.
-        updatePanels('horiz', data.items[0].id.videoId);
-        if (data.items[1]) updatePanels('vert', data.items[1].id.videoId);
-        setStatus('✓ Updated', 'ok');
-      } else {
-        setStatus('○ No Live Streams');
-        if (cfg.manualHoriz) updatePanels('horiz', cfg.manualHoriz);
-        if (cfg.manualVert) updatePanels('vert', cfg.manualVert);
-      }
-    } catch(e) { setStatus('✗ API Error'); }
-  }
-
-  function updatePanels(type, videoId) {
-    const vFrame = document.getElementById(`${type}-frame`);
-    const cFrame = document.getElementById(`chat-${type}-frame`);
-    vFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0`;
-    cFrame.src = `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${window.location.hostname}&dark_theme=1`;
-    vFrame.style.display = 'block';
-    cFrame.style.display = 'block';
-  }
-
-  function setStatus(msg) { document.getElementById('fetch-status').textContent = msg; }
-  function refreshStreams() { fetchLiveStreams(); }
-
-  /* ── TOUCH & MOUSE DRAG ENGINE ── */
+  // ── Draggable splitters ──
   function initDrag() {
-    const vDrag = document.getElementById('v-drag'), hDrag = document.getElementById('h-drag');
-    const topPanel = document.getElementById('top-panel'), rightCol = document.getElementById('right-col');
-    const leftCol = document.getElementById('left-col'), appBody = document.getElementById('app-body');
+    // Horizontal drag (left/right columns)
+    const hDrag = document.getElementById('h-drag');
+    const leftCol = document.getElementById('left-col');
+    const main = document.getElementById('main');
 
-    const handleV = (e) => {
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      appBody.classList.add('is-dragging');
-      vDrag.classList.add('dragging');
-      
-      const onMove = (ev) => {
-        const y = ev.touches ? ev.touches[0].clientY : ev.clientY;
-        const rect = leftCol.getBoundingClientRect();
-        const percent = ((y - rect.top) / rect.height) * 100;
-        topPanel.style.height = Math.max(10, Math.min(90, percent)) + '%';
-      };
-      
-      const onEnd = () => {
-        appBody.classList.remove('is-dragging');
-        vDrag.classList.remove('dragging');
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('touchmove', onMove);
-      };
-      
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: false });
-      window.addEventListener('mouseup', onEnd, { once: true });
-      window.addEventListener('touchend', onEnd, { once: true });
-    };
-
-    const handleH = (e) => {
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      appBody.classList.add('is-dragging');
+    hDrag.addEventListener('mousedown', e => {
+      e.preventDefault();
       hDrag.classList.add('dragging');
+      const startX = e.clientX;
+      const startW = leftCol.getBoundingClientRect().width;
+      const totalW = main.getBoundingClientRect().width;
 
-      const onMove = (ev) => {
-        const x = ev.touches ? ev.touches[0].clientX : ev.clientX;
-        const totalW = window.innerWidth;
-        const percent = ((totalW - x) / totalW) * 100;
-        rightCol.style.width = Math.max(10, Math.min(80, percent)) + '%';
-      };
-
-      const onEnd = () => {
-        appBody.classList.remove('is-dragging');
+      function onMove(e) {
+        const delta = e.clientX - startX;
+        const newW = Math.max(200, Math.min(totalW - 200, startW + delta));
+        leftCol.style.width = newW + 'px';
+        leftCol.style.flex = 'none';
+      }
+      function onUp() {
         hDrag.classList.remove('dragging');
         window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('touchmove', onMove);
-      };
-
+        window.removeEventListener('mouseup', onUp);
+      }
       window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: false });
-      window.addEventListener('mouseup', onEnd, { once: true });
-      window.addEventListener('touchend', onEnd, { once: true });
-    };
+      window.addEventListener('mouseup', onUp);
+    });
 
-    vDrag.addEventListener('mousedown', handleV);
-    vDrag.addEventListener('touchstart', handleV, { passive: false });
-    hDrag.addEventListener('mousedown', handleH);
-    hDrag.addEventListener('touchstart', handleH, { passive: false });
+    // Vertical drag (top/bottom in left col)
+    const vDrag = document.getElementById('v-drag');
+    const topPanel = document.getElementById('top-panel');
+    const leftColEl = document.getElementById('left-col');
+
+    vDrag.addEventListener('mousedown', e => {
+      e.preventDefault();
+      vDrag.classList.add('dragging');
+      const startY = e.clientY;
+      const startH = topPanel.getBoundingClientRect().height;
+      const colH = leftColEl.getBoundingClientRect().height;
+
+      function onMove(e) {
+        const delta = e.clientY - startY;
+        const newH = Math.max(80, Math.min(colH - 80, startH + delta));
+        topPanel.style.height = newH + 'px';
+        topPanel.style.flex = 'none';
+      }
+      function onUp() {
+        vDrag.classList.remove('dragging');
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      }
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    });
+
+    // Touch support for mobile
+    function addTouch(dragEl, moveFn) {
+      dragEl.addEventListener('touchstart', e => {
+        const touch = e.touches[0];
+        const fakeDown = new MouseEvent('mousedown', { clientX: touch.clientX, clientY: touch.clientY });
+        dragEl.dispatchEvent(fakeDown);
+      }, { passive: true });
+    }
+    addTouch(hDrag);
+    addTouch(vDrag);
+  }
+
+  // ── Demo chat ──
+  const demoUsers = [
+    { name: 'xXShadowXx', color: '#00e5ff', bg: '#0a2a30' },
+    { name: 'ProGamer99', color: '#ff3cac', bg: '#2a0a1e' },
+    { name: 'StreamFan', color: '#7b2ff7', bg: '#1a0a30' },
+    { name: 'LilChatty', color: '#ffb347', bg: '#2a1a05' },
+    { name: 'PixelKnight', color: '#39ff14', bg: '#0a1e05' },
+  ];
+  const demoMessages = [
+    "Let's gooo! 🔥", "W stream bro", "hype hype hype!!",
+    "PogChamp PogChamp", "first time here, love the content!",
+    "clip that clip that", "LUL LUL LUL", "this is insane",
+    "how long has stream been up?", "Pog Pog Pog",
+    "sub goal looking good!", "chat is moving fast today",
+    "hello from Germany 🇩🇪", "OMEGALUL", "based streamer fr",
+  ];
+
+  function addChatMessage(user, text) {
+    const container = document.getElementById('chat-messages');
+    if (!container) return;
+    const msg = document.createElement('div');
+    msg.className = 'chat-msg';
+    const initials = user.name.slice(0, 2).toUpperCase();
+    msg.innerHTML = `
+      <div class="chat-avatar" style="background:${user.bg};color:${user.color}">${initials}</div>
+      <div>
+        <div class="chat-author" style="color:${user.color}">${user.name}</div>
+        <div class="chat-text">${text}</div>
+      </div>`;
+    container.appendChild(msg);
+    container.scrollTop = container.scrollHeight;
+    // Keep max 80 messages
+    while (container.children.length > 80) container.removeChild(container.firstChild);
+  }
+
+  function sendChat() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    addChatMessage({ name: 'You', color: '#ffffff', bg: '#1e2d3d' }, text);
+    input.value = '';
+  }
+
+  function startDemoChat() {
+    function drop() {
+      const user = demoUsers[Math.floor(Math.random() * demoUsers.length)];
+      const msg = demoMessages[Math.floor(Math.random() * demoMessages.length)];
+      addChatMessage(user, msg);
+      setTimeout(drop, 1500 + Math.random() * 3000);
+    }
+    drop();
   }
 </script>
 </body>
