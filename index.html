@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg: #080c10; --panel: #0d1117; --border: #ff8800;
+      --bg: #080c10; --panel: #0d1117; --border: #1f2d3d;
       --accent: #00e5ff; --accent2: #ff3cac; --accent3: #7b2ff7;
       --text: #c9d1d9; --text-dim: #4a5568;
       --glow: 0 0 12px rgba(0,229,255,0.35);
@@ -118,11 +118,11 @@
     #left-col { display:flex; flex-direction:column; flex: 1; min-width: 100px; }
     
     #h-drag { 
-      width:var(--handle); background:var(--border); cursor: col-resize; z-index: 50; 
+      width:var(--handle); background:#000000; cursor: col-resize; z-index: 50; 
       touch-action: none; transition: background 0.2s;
     }
     #v-drag { 
-      height:var(--handle); background:var(--border); cursor: row-resize; z-index: 50; 
+      height:var(--handle); background: #000000; cursor: row-resize; z-index: 50; 
       touch-action: none; transition: background 0.2s;
     }
     #h-drag:hover, #h-drag.dragging { background: var(--accent); box-shadow: var(--glow); }
