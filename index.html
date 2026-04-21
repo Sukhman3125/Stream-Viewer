@@ -163,6 +163,28 @@
       #bottom-panel { height: 400px !important; }
       body { overflow: auto; }
     }
+    /* Neon Separator */
+
+    .chat-half:first-child {
+
+      border-right: 1px solid var(--border);
+
+    }
+
+    .chat-half:first-child::after {
+
+      content: ''; position: absolute; top: 10%; right: -1px; height: 80%; width: 1px;
+
+      background: linear-gradient(to bottom, transparent, var(--accent3), transparent);
+
+      z-index: 5;
+
+    }
+
+
+
+    .chat-frame { flex: 1; width: 100%; border: none; }
+
   </style>
 </head>
 <body id="app-body">
