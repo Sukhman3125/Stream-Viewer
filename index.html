@@ -324,7 +324,6 @@
     if (cfg.ytChannelId && cfg.ytApiKey) {
       fetchLiveStreams();
       if (pollTimer) clearInterval(pollTimer);
-      pollTimer = setInterval(fetchLiveStreams, 900000);
     } else {
       if (cfg.manualHoriz) updatePanels('horiz', cfg.manualHoriz);
       if (cfg.manualVert) updatePanels('vert', cfg.manualVert);
