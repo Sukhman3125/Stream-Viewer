@@ -70,7 +70,7 @@
       display: block; font-family: 'Share Tech Mono', monospace;
       font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px;
     }
-    .input-group input {
+    .input-group input, .input-group textarea {
       width: 100%; background: rgba(255,255,255,0.03);
       border: 1px solid var(--border); border-radius: 6px;
       padding: 10px; color: var(--text);
@@ -192,17 +192,17 @@
     <h1>Dashboard Config</h1>
     
     <div class="tutorial-box">
-      <strong>Mobile/Tab User:</strong> Use the colored bars between windows to resize. If on phone, panels stack vertically for better visibility.
+      <strong>Failover System:</strong> Enter up to 4 API keys below (one per line). The app will automatically switch keys if one hits its limit.
     </div>
 
-    <div class="section-heading">⚡ YouTube API (Auto)</div>
+    <div class="section-heading">⚡ YouTube API (Auto-Rotate)</div>
     <div class="input-group">
       <label>Channel ID</label>
       <input id="yt-channel-id" type="text" placeholder="UC..." />
     </div>
     <div class="input-group">
-      <label>API Key</label>
-      <input id="yt-api-key" type="password" placeholder="AIza..." />
+      <label>API Keys (One per line)</label>
+      <textarea id="yt-api-keys" placeholder="AIza...1&#10;AIza...2" rows="4"></textarea>
     </div>
 
     <div class="section-heading">🔧 Manual IDs (Fallback)</div>
@@ -278,8 +278,9 @@
   let cfg = {};
   let pollTimer = null;
   let viewRefreshTimer = null;
+  let activeKeyIndex = 0;
 
-  // Track currently active video IDs (separate from cfg which only stores manual ones)
+  // Track currently active video IDs
   let activeVideoIds = { horiz: null, vert: null };
 
   function save() { localStorage.setItem(STORE_KEY, JSON.stringify(cfg)); }
@@ -297,7 +298,7 @@
 
   function restoreForm() {
     document.getElementById('yt-channel-id').value = cfg.ytChannelId || '';
-    document.getElementById('yt-api-key').value = cfg.ytApiKey || '';
+    document.getElementById('yt-api-keys').value = (cfg.ytApiKeys || []).join('\n');
     document.getElementById('manual-horiz').value = cfg.manualHoriz || '';
     document.getElementById('manual-vert').value = cfg.manualVert || '';
   }
@@ -305,12 +306,14 @@
   function showSetup() { restoreForm(); document.getElementById('setup-overlay').classList.remove('hidden'); }
 
   function launchDashboard() {
+    const keys = document.getElementById('yt-api-keys').value.split('\n').map(k => k.trim()).filter(k => k);
     cfg = {
       ytChannelId: document.getElementById('yt-channel-id').value.trim(),
-      ytApiKey: document.getElementById('yt-api-key').value.trim(),
+      ytApiKeys: keys,
       manualHoriz: extractVideoId(document.getElementById('manual-horiz').value.trim()),
       manualVert: extractVideoId(document.getElementById('manual-vert').value.trim()),
     };
+    activeKeyIndex = 0;
     save();
     applyConfig();
     document.getElementById('setup-overlay').classList.add('hidden');
@@ -322,15 +325,37 @@
     return match ? match[1] : input;
   }
 
+  // Wrapper to handle API rotation automatically
+  async function fetchWithRotation(url) {
+    const keys = cfg.ytApiKeys || [];
+    if (keys.length === 0) throw new Error("No keys");
+
+    for (let i = 0; i < keys.length; i++) {
+      const currentKey = keys[activeKeyIndex];
+      try {
+        const res = await fetch(`${url}&key=${currentKey}`);
+        const data = await res.json();
+
+        if (data.error && data.error.code === 403) {
+          activeKeyIndex = (activeKeyIndex + 1) % keys.length;
+          continue; 
+        }
+        return data;
+      } catch (err) {
+        activeKeyIndex = (activeKeyIndex + 1) % keys.length;
+      }
+    }
+    throw new Error("All keys exhausted");
+  }
+
   async function fetchViewCount(videoId, type) {
-    const { ytApiKey } = cfg;
-    if (!ytApiKey || !videoId) return;
+    if (!videoId || !cfg.ytApiKeys?.length) return;
     try {
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${videoId}&key=${ytApiKey}`);
-      const data = await res.json();
+      const url = `https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${videoId}`;
+      const data = await fetchWithRotation(url);
       const count = data.items?.[0]?.liveStreamingDetails?.concurrentViewers;
       const el = document.getElementById(`views-${type}`);
-      el.textContent = `👁 ${Number(count).toLocaleString()}` ;
+      el.textContent = count ? `👁 ${Number(count).toLocaleString()}` : '';
     } catch {}
   }
 
@@ -345,7 +370,7 @@
   }
 
   function applyConfig() {
-    if (cfg.ytChannelId && cfg.ytApiKey) {
+    if (cfg.ytChannelId && cfg.ytApiKeys?.length) {
       fetchLiveStreams();
       if (pollTimer) clearInterval(pollTimer);
     } else {
@@ -356,21 +381,22 @@
   }
 
   async function fetchLiveStreams() {
-    const { ytChannelId, ytApiKey } = cfg;
+    const { ytChannelId } = cfg;
     setStatus(`⟳ Syncing...`);
     try {
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${ytChannelId}&eventType=live&type=video&maxResults=3&key=${ytApiKey}`);
-      const data = await res.json();
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${ytChannelId}&eventType=live&type=video&maxResults=3`;
+      const data = await fetchWithRotation(url);
+      
       if (data.items && data.items.length > 0) {
         updatePanels('horiz', data.items[0].id.videoId);
         if (data.items[1]) updatePanels('vert', data.items[1].id.videoId);
-        setStatus('✓ Updated');
+        setStatus(`✓ Active Key: ${activeKeyIndex + 1}`);
       } else {
         setStatus('○ No Live Streams');
         if (cfg.manualHoriz) updatePanels('horiz', cfg.manualHoriz);
         if (cfg.manualVert) updatePanels('vert', cfg.manualVert);
       }
-    } catch(e) { setStatus('✗ API Error'); }
+    } catch(e) { setStatus('✗ Keys Exhausted'); }
   }
 
   function swapStreams() {
@@ -387,7 +413,6 @@
     chatHorizFrame.src = chatVertFrame.src;
     chatVertFrame.src = tmpChat;
 
-    // Swap tracked video IDs and refresh view counts
     const tmpId = activeVideoIds.horiz;
     activeVideoIds.horiz = activeVideoIds.vert;
     activeVideoIds.vert = tmpId;
@@ -401,7 +426,6 @@
     const cFrame = document.getElementById(`chat-${type}-frame`);
     const vPlaceholder = document.getElementById(`${type}-placeholder`);
 
-    // Store the active video ID so view refresh always knows what's playing
     activeVideoIds[type] = videoId;
 
     vFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&playsinline=1`;
@@ -411,13 +435,12 @@
     cFrame.style.display = 'block';
     if (vPlaceholder) vPlaceholder.style.display = 'none';
 
-    // Fetch view count immediately for this panel
     fetchViewCount(videoId, type);
   }
 
   function setStatus(msg) { document.getElementById('fetch-status').textContent = msg; }
   function refreshStreams() {
-    if (cfg.ytChannelId && cfg.ytApiKey) {
+    if (cfg.ytChannelId && cfg.ytApiKeys?.length) {
       fetchLiveStreams();
     } else {
       if (cfg.manualHoriz) updatePanels('horiz', cfg.manualHoriz);
@@ -425,7 +448,6 @@
     }
   }
 
-  /* ── TOUCH & MOUSE DRAG ENGINE ── */
   function initDrag() {
     const vDrag = document.getElementById('v-drag'), hDrag = document.getElementById('h-drag');
     const topPanel = document.getElementById('top-panel'), rightCol = document.getElementById('right-col');
@@ -434,21 +456,18 @@
     const handleV = (e) => {
       appBody.classList.add('is-dragging');
       vDrag.classList.add('dragging');
-      
       const onMove = (ev) => {
         const y = ev.touches ? ev.touches[0].clientY : ev.clientY;
         const rect = leftCol.getBoundingClientRect();
         const percent = ((y - rect.top) / rect.height) * 100;
         topPanel.style.height = Math.max(10, Math.min(90, percent)) + '%';
       };
-      
       const onEnd = () => {
         appBody.classList.remove('is-dragging');
         vDrag.classList.remove('dragging');
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('touchmove', onMove);
       };
-      
       window.addEventListener('mousemove', onMove);
       window.addEventListener('touchmove', onMove, { passive: false });
       window.addEventListener('mouseup', onEnd, { once: true });
@@ -458,21 +477,18 @@
     const handleH = (e) => {
       appBody.classList.add('is-dragging');
       hDrag.classList.add('dragging');
-
       const onMove = (ev) => {
         const x = ev.touches ? ev.touches[0].clientX : ev.clientX;
         const totalW = window.innerWidth;
         const percent = ((totalW - x) / totalW) * 100;
         rightCol.style.width = Math.max(10, Math.min(80, percent)) + '%';
       };
-
       const onEnd = () => {
         appBody.classList.remove('is-dragging');
         hDrag.classList.remove('dragging');
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('touchmove', onMove);
       };
-
       window.addEventListener('mousemove', onMove);
       window.addEventListener('touchmove', onMove, { passive: false });
       window.addEventListener('mouseup', onEnd, { once: true });
