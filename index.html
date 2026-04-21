@@ -311,22 +311,45 @@
   async function fetchLiveStreams() {
     const { ytChannelId, ytApiKey } = cfg;
     setStatus(`⟳ Syncing...`);
+    
     try {
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${ytChannelId}&eventType=live&type=video&maxResults=3&key=${ytApiKey}`);
-      const data = await res.json();
-      if (data.items && data.items.length > 0) {
-        // Logic to distinguish H vs V would go here based on snippet, 
-        // for now we'll map first to H and second to V.
-        updatePanels('horiz', data.items[0].id.videoId);
-        if (data.items[1]) updatePanels('vert', data.items[1].id.videoId);
-        setStatus('✓ Updated', 'ok');
-      } else {
-        setStatus('○ No Live Streams');
-        if (cfg.manualHoriz) updatePanels('horiz', cfg.manualHoriz);
-        if (cfg.manualVert) updatePanels('vert', cfg.manualVert);
-      }
-    } catch(e) { setStatus('✗ API Error'); }
-  }
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${ytChannelId}&eventType=live&type=video&maxResults=5&key=${ytApiKey}`);
+        const data = await res.json();
+        
+        if (data.items && data.items.length > 0) {
+            let horizId = null;
+            let vertId = null;
+
+            // ANALYZE EACH STREAM
+            for (let item of data.items) {
+                const thumb = item.snippet.thumbnails.high || item.snippet.thumbnails.default;
+                
+                // Vertical thumbnails have height > width
+                const isVertical = thumb.height > thumb.width;
+
+                if (isVertical && !vertId) {
+                    vertId = item.id.videoId;
+                } else if (!isVertical && !horizId) {
+                    horizId = item.id.videoId;
+                }
+            }
+
+            // ASSIGN TO PANELS (with fallbacks)
+            if (horizId) updatePanels('horiz', horizId);
+            if (vertId) updatePanels('vert', vertId);
+            
+            setStatus('✓ Smart Sync OK', 'ok');
+        } else {
+            setStatus('○ Offline');
+            // Fallback to manual IDs if offline
+            if (cfg.manualHoriz) updatePanels('horiz', cfg.manualHoriz);
+            if (cfg.manualVert) updatePanels('vert', cfg.manualVert);
+        }
+    } catch(e) { 
+        console.error(e);
+        setStatus('✗ Sync Error'); 
+    }
+}
 
   function updatePanels(type, videoId) {
     const vFrame = document.getElementById(`${type}-frame`);
