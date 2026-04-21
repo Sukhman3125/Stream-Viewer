@@ -1,505 +1,800 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="Logo.png" />
   <link rel="apple-touch-icon" type="image/png" href="Logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Stream Viewer (By Sukhman)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap"
+    rel="stylesheet" />
   <style>
     :root {
-      --bg: #080c10; --panel: #0d1117; --border: #1f2d3d;
-      --accent: #00e5ff; --accent2: #ff3cac; --accent3: #7b2ff7;
-      --text: #c9d1d9; --text-dim: #4a5568;
-      --glow: 0 0 12px rgba(0,229,255,0.35);
-      --glow2: 0 0 12px rgba(255,60,172,0.35);
+      --bg: #080c10;
+      --panel: #0d1117;
+      --border: #1f2d3d;
+      --accent: #00e5ff;
+      --accent2: #ff3cac;
+      --accent3: #7b2ff7;
+      --text: #c9d1d9;
+      --text-dim: #4a5568;
+      --glow: 0 0 12px rgba(0, 229, 255, 0.35);
+      --glow2: 0 0 12px rgba(255, 60, 172, 0.35);
       --handle: 10px;
       --safe-top: 32px;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       font-family: 'Exo 2', sans-serif;
-      background: var(--bg); color: var(--text);
-      height: 100vh; 
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
       height: 100dvh;
       overflow: hidden;
-      display: flex; flex-direction: column;
+      display: flex;
+      flex-direction: column;
     }
 
     #setup-overlay {
-      position: fixed; inset: 0;
-      background: rgba(8,12,16,0.97);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 999; backdrop-filter: blur(6px);
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 12, 16, 0.97);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      backdrop-filter: blur(6px);
     }
-    #setup-overlay.hidden { display: none; }
+
+    #setup-overlay.hidden {
+      display: none;
+    }
+
     .setup-card {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 16px; padding: 30px;
-      width: 520px; max-width: 90vw; max-height: 85vh; overflow-y: auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 30px;
+      width: 520px;
+      max-width: 90vw;
+      max-height: 85vh;
+      overflow-y: auto;
       position: relative;
     }
+
     .setup-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
       background: linear-gradient(90deg, var(--accent3), var(--accent), var(--accent2));
       border-radius: 16px 16px 0 0;
     }
+
     .setup-card h1 {
-      font-family: 'Rajdhani', sans-serif; font-size: 1.5rem; font-weight: 700;
-      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 15px;
       background: linear-gradient(90deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .section-heading {
-      font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
-      letter-spacing: 2px; text-transform: uppercase; color: var(--accent3);
-      padding: 6px 0; border-bottom: 1px solid var(--border);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent3);
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
       margin: 20px 0 10px;
     }
 
     .tutorial-box {
-      font-size: 0.75rem; line-height: 1.5; color: var(--text-dim);
-      background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border-left: 2px solid var(--accent3);
+      font-size: 0.75rem;
+      line-height: 1.5;
+      color: var(--text-dim);
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px;
+      border-radius: 8px;
+      border-left: 2px solid var(--accent3);
     }
 
-    .input-group { margin-bottom: 12px; }
-    .input-group label {
-      display: block; font-family: 'Share Tech Mono', monospace;
-      font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px;
+    .input-group {
+      margin-bottom: 12px;
     }
-    .input-group input, .input-group textarea {
-      width: 100%; background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border); border-radius: 6px;
-      padding: 10px; color: var(--text);
-      font-family: 'Share Tech Mono', monospace; font-size: 0.8rem;
+
+    .input-group label {
+      display: block;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .input-group input,
+    .input-group textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem;
     }
 
     .btn-launch {
-      width: 100%; margin-top: 20px; padding: 14px;
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
       background: linear-gradient(135deg, var(--accent3), var(--accent));
-      border: none; border-radius: 8px; color: #fff;
-      font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700;
-      letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
     }
 
     #topbar {
-      height: 48px; background: var(--panel);
+      height: 48px;
+      background: var(--panel);
       border-bottom: 1px solid var(--border);
-      display: flex; align-items: center;
-      padding: 0 12px; gap: 10px; flex-shrink: 0; z-index: 100;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 10px;
+      flex-shrink: 0;
+      z-index: 100;
     }
+
     .logo {
-      font-family: 'Rajdhani', sans-serif; font-size: 0.9rem;
-      font-weight: 700; letter-spacing: 1px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 1px;
       background: linear-gradient(90deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
+
     .live-pill {
-      display: flex; align-items: center; gap: 4px;
-      background: rgba(255,60,60,0.1); border: 1px solid rgba(255,60,60,0.3);
-      border-radius: 4px; padding: 2px 6px;
-      font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: #ff5555;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 60, 60, 0.1);
+      border: 1px solid rgba(255, 60, 60, 0.3);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: #ff5555;
     }
-    .live-dot { width:6px; height:6px; border-radius:50%; background:#ff5555; animation:pulse 1.4s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    #fetch-status { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-dim); }
-    .topbar-right { margin-left:auto; display:flex; gap:6px; }
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ff5555;
+      animation: pulse 1.4s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.3
+      }
+    }
+
+    #fetch-status {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+    }
+
+    .topbar-right {
+      margin-left: auto;
+      display: flex;
+      gap: 6px;
+    }
+
     .btn-sm {
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 4px;
-      color: var(--text); padding: 4px 8px; font-size: 0.6rem; cursor: pointer;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      padding: 4px 8px;
+      font-size: 0.6rem;
+      cursor: pointer;
     }
 
-    #main { flex:1; display:flex; min-height:0; position: relative; }
-    #left-col { display:flex; flex-direction:column; flex: 1; min-width: 100px; }
-    
-    #h-drag { 
-      width:var(--handle); background:#161616; cursor: col-resize; z-index: 50; 
-      touch-action: none; transition: background 0.2s;
+    #main {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      position: relative;
     }
-    #v-drag { 
-      height:var(--handle); background: #161616; cursor: row-resize; z-index: 50; 
-      touch-action: none; transition: background 0.2s;
+
+    #left-col {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 100px;
     }
-    #h-drag:hover, #h-drag.dragging { background: var(--accent); box-shadow: var(--glow); }
-    #v-drag:hover, #v-drag.dragging { background: var(--accent2); box-shadow: var(--glow2); }
 
-    #right-col { width: 30%; flex-shrink: 0; display: flex; flex-direction: column; }
-    #top-panel { height: 50%; min-height: 100px; position: relative; }
-    #bottom-panel { flex: 1; min-height: 100px; position: relative; }
+    #h-drag {
+      width: var(--handle);
+      background: #161616;
+      cursor: col-resize;
+      z-index: 50;
+      touch-action: none;
+      transition: background 0.2s;
+    }
 
-    body.is-dragging iframe { pointer-events: none !important; }
+    #v-drag {
+      height: var(--handle);
+      background: #161616;
+      cursor: row-resize;
+      z-index: 50;
+      touch-action: none;
+      transition: background 0.2s;
+    }
 
-    .panel { width:100%; height:100%; background:var(--panel); position:relative; overflow:hidden; }
+    #h-drag:hover,
+    #h-drag.dragging {
+      background: var(--accent);
+      box-shadow: var(--glow);
+    }
+
+    #v-drag:hover,
+    #v-drag.dragging {
+      background: var(--accent2);
+      box-shadow: var(--glow2);
+    }
+
+    #right-col {
+      width: 30%;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #top-panel {
+      height: 50%;
+      min-height: 100px;
+      position: relative;
+    }
+
+    #bottom-panel {
+      flex: 1;
+      min-height: 100px;
+      position: relative;
+    }
+
+    body.is-dragging iframe {
+      pointer-events: none !important;
+    }
+
+    .panel {
+      width: 100%;
+      height: 100%;
+      background: var(--panel);
+      position: relative;
+      overflow: hidden;
+    }
+
     .panel-label {
-      position: absolute; top: 6px; left: 8px;
-      font-family:'Share Tech Mono',monospace; font-size:0.55rem;
-      z-index:10; padding:2px 6px; border-radius:3px;
-      background: rgba(8, 12, 16, 0.8); border: 1px solid rgba(255,255,255,0.1);
+      position: absolute;
+      top: 6px;
+      left: 8px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.55rem;
+      z-index: 10;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: rgba(8, 12, 16, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
+
     .view-count {
-      font-family: 'Share Tech Mono', monospace; font-size: 0.55rem;
-      color: #ffdd57; margin-left: 5px; opacity: 0.85;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.55rem;
+      color: #ffdd57;
+      margin-left: 5px;
+      opacity: 0.85;
     }
-    .cyan { color: var(--accent); } .pink { color: var(--accent2); } .purple { color: #b77fff; }
 
-    .panel-content { width: 100%; height: 100%; padding-top: var(--safe-top); position: relative; }
-    .stream-frame { width:100%; height:100%; border:none; }
-    
-    #dual-chat-container { display: flex; width: 100%; height: 100%; gap: 1px; background: var(--border); padding-top: 28px; }
-    .chat-half { flex: 1; position: relative; background: var(--panel); min-width: 0; }
-    .chat-frame { width: 100%; height: 100%; border: none; }
+    .cyan {
+      color: var(--accent);
+    }
 
-    .placeholder { position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; opacity: 0.2; pointer-events: none; }
+    .pink {
+      color: var(--accent2);
+    }
+
+    .purple {
+      color: #b77fff;
+    }
+
+    .panel-content {
+      width: 100%;
+      height: 100%;
+      padding-top: var(--safe-top);
+      position: relative;
+    }
+
+    .stream-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    #dual-chat-container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      gap: 1px;
+      background: var(--border);
+      padding-top: 28px;
+    }
+
+    .chat-half {
+      flex: 1;
+      position: relative;
+      background: var(--panel);
+      min-width: 0;
+    }
+
+    .chat-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.2;
+      pointer-events: none;
+    }
 
     @media (max-width: 800px) {
-      #main { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
-      #h-drag { display: none; }
-      #right-col { width: 100% !important; height: 450px; flex-shrink: 0; }
-      #left-col { height: auto; flex: none; }
-      #top-panel { height: 300px !important; }
-      #bottom-panel { height: 400px !important; }
-      body { overflow: auto; }
+      #main {
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      #h-drag {
+        display: none;
+      }
+
+      #right-col {
+        width: 100% !important;
+        height: 450px;
+        flex-shrink: 0;
+      }
+
+      #left-col {
+        height: auto;
+        flex: none;
+      }
+
+      #top-panel {
+        height: 300px !important;
+      }
+
+      #bottom-panel {
+        height: 400px !important;
+      }
+
+      body {
+        overflow: auto;
+      }
     }
 
     .chat-half:first-child {
       border-right: 1px solid var(--border);
     }
+
     .chat-half:first-child::after {
-      content: ''; position: absolute; top: 10%; right: -1px; height: 80%; width: 1px;
+      content: '';
+      position: absolute;
+      top: 10%;
+      right: -1px;
+      height: 80%;
+      width: 1px;
       background: linear-gradient(to bottom, transparent, var(--accent3), transparent);
       z-index: 5;
     }
-    .chat-frame { flex: 1; width: 100%; border: none; }
+
+    .chat-frame {
+      flex: 1;
+      width: 100%;
+      border: none;
+    }
 
     /* View count on right panel */
     #vert-view-count {
-      position: absolute; top: 6px; right: 8px;
-      font-family:'Share Tech Mono',monospace; font-size:0.55rem;
-      z-index:10; padding:2px 6px; border-radius:3px;
-      background: rgba(8, 12, 16, 0.8); border: 1px solid rgba(255,255,255,0.1);
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.55rem;
+      z-index: 10;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: rgba(8, 12, 16, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: #ffdd57;
     }
   </style>
 </head>
+
 <body id="app-body">
 
-<div id="setup-overlay">
-  <div class="setup-card">
-    <h1>Dashboard Config</h1>
-    
-    <div class="tutorial-box">
-      <strong>Failover System:</strong> Enter up to 4 API keys below (one per line). The app will automatically switch keys if one hits its limit.
-    </div>
+  <div id="setup-overlay">
+    <div class="setup-card">
+      <h1>Dashboard Config</h1>
 
-    <div class="section-heading">⚡ YouTube API (Auto-Rotate)</div>
-    <div class="input-group">
-      <label>Channel ID</label>
-      <input id="yt-channel-id" type="text" placeholder="UC..." />
-    </div>
-    <div class="input-group">
-      <label>API Keys (One per line)</label>
-      <textarea id="yt-api-keys" placeholder="AIza...1&#10;AIza...2" rows="4"></textarea>
-    </div>
+      <div class="tutorial-box">
+        <ul style="list-style-position: inside; margin: 0; padding: 0;">
+          <li>
+            <strong>Failover System:</strong> Enter up to 4 API keys below (one per line). The app will automatically
+            switch keys if one hits its limit.
+          </li>
+          <li style="margin-top: 5px;">
+            To create your own API keys, head over to the link below and create a YouTube v3 API key. 2 keys are usually
+            enough for most use cases.
+          </li>
+          <li style="margin-top: 8px; list-style: none;">
+            <a href="https://console.cloud.google.com/apis/api/youtube.googleapis.com/" target="_blank"
+              style="color: var(--accent); font-weight: bold; text-decoration: none; border-bottom: 1px dashed var(--accent);">
+              Get API Keys Here ↗
+            </a>
+          </li>
+        </ul>
+      </div>
 
-    <div class="section-heading">🔧 Manual IDs (Fallback)</div>
-    <div class="input-group">
-      <label>Horizontal ID</label>
-      <input id="manual-horiz" type="text" />
-    </div>
-    <div class="input-group">
-      <label>Vertical ID</label>
-      <input id="manual-vert" type="text" />
-    </div>
+      <div class="section-heading">⚡ YouTube API (Auto-Rotate)</div>
+      <div class="input-group">
+        <label>Channel ID</label>
+        <input id="yt-channel-id" type="text" placeholder="UC..." />
+      </div>
+      <div class="input-group">
+        <label>API Keys (One per line)</label>
+        <textarea id="yt-api-keys" placeholder="AIza...1&#10;AIza...2" rows="4"></textarea>
+      </div>
 
-    <button class="btn-launch" onclick="launchDashboard()">⚡ Save & Launch</button>
+      <div class="section-heading">🔧 Manual IDs (Fallback)</div>
+      <div class="input-group">
+        <label>Horizontal ID</label>
+        <input id="manual-horiz" type="text" />
+      </div>
+      <div class="input-group">
+        <label>Vertical ID</label>
+        <input id="manual-vert" type="text" />
+      </div>
+
+      <button class="btn-launch" onclick="launchDashboard()">⚡ Save & Launch</button>
+    </div>
   </div>
-</div>
 
-<div id="topbar">
-  <span class="logo">Stream Viewer</span>
-  <div class="live-pill"><span class="live-dot"></span>LIVE</div>
-  <span id="fetch-status">READY</span>
-  <div class="topbar-right">
-    <button class="btn-sm" onclick="refreshStreams()">↻ SYNC</button>
-    <button class="btn-sm" onclick="swapStreams()">⇄ SWAP</button>
-    <button class="btn-sm" onclick="showSetup()">⚙ SETTINGS</button>
+  <div id="topbar">
+    <span class="logo">Stream Viewer</span>
+    <div class="live-pill"><span class="live-dot"></span>LIVE</div>
+    <span id="fetch-status">READY</span>
+    <div class="topbar-right">
+      <button class="btn-sm" onclick="refreshStreams()">↻ SYNC</button>
+      <button class="btn-sm" onclick="swapStreams()">⇄ SWAP</button>
+      <button class="btn-sm" onclick="showSetup()">⚙ SETTINGS</button>
+    </div>
   </div>
-</div>
 
-<div id="main">
-  <div id="left-col">
-    <div id="top-panel">
+  <div id="main">
+    <div id="left-col">
+      <div id="top-panel">
+        <div class="panel">
+          <span class="panel-label cyan">▶ HORIZONTAL</span>
+          <div class="panel-content">
+            <div class="placeholder" id="horiz-placeholder">📺</div>
+            <iframe id="horiz-frame" class="stream-frame" style="display:none;" allowfullscreen
+              allow="autoplay; encrypted-media"></iframe>
+          </div>
+        </div>
+      </div>
+
+      <div id="v-drag"></div>
+
+      <div id="bottom-panel">
+        <div class="panel">
+          <span class="panel-label pink" style="left: 8px; top: 4px;">💬 CHAT (H) <span id="views-horiz"
+              class="view-count"></span></span>
+          <span class="panel-label purple" style="left: calc(50% + 8px); top: 4px;">💬 CHAT (V) <span id="views-vert"
+              class="view-count"></span></span>
+          <div id="dual-chat-container">
+            <div class="chat-half">
+              <iframe id="chat-horiz-frame" class="chat-frame" style="display:none;"></iframe>
+            </div>
+            <div class="chat-half">
+              <iframe id="chat-vert-frame" class="chat-frame" style="display:none;"></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="h-drag"></div>
+
+    <div id="right-col">
       <div class="panel">
-        <span class="panel-label cyan">▶ HORIZONTAL</span>
+        <span class="panel-label purple">📱 VERTICAL</span>
         <div class="panel-content">
-          <div class="placeholder" id="horiz-placeholder">📺</div>
-          <iframe id="horiz-frame" class="stream-frame" style="display:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
-        </div>
-      </div>
-    </div>
-    
-    <div id="v-drag"></div>
-    
-    <div id="bottom-panel">
-      <div class="panel">
-        <span class="panel-label pink" style="left: 8px; top: 4px;">💬 CHAT (H) <span id="views-horiz" class="view-count"></span></span>
-        <span class="panel-label purple" style="left: calc(50% + 8px); top: 4px;">💬 CHAT (V) <span id="views-vert" class="view-count"></span></span>
-        <div id="dual-chat-container">
-          <div class="chat-half">
-            <iframe id="chat-horiz-frame" class="chat-frame" style="display:none;"></iframe>
-          </div>
-          <div class="chat-half">
-            <iframe id="chat-vert-frame" class="chat-frame" style="display:none;"></iframe>
-          </div>
+          <div class="placeholder" id="vert-placeholder">📱</div>
+          <iframe id="vert-frame" class="stream-frame" style="display:none;" allowfullscreen
+            allow="autoplay; encrypted-media"></iframe>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="h-drag"></div>
+  <script>
+    const STORE_KEY = 'streamhub_v4';
+    let cfg = {};
+    let pollTimer = null;
+    let viewRefreshTimer = null;
+    let activeKeyIndex = 0;
 
-  <div id="right-col">
-    <div class="panel">
-      <span class="panel-label purple">📱 VERTICAL</span>
-      <div class="panel-content">
-        <div class="placeholder" id="vert-placeholder">📱</div>
-        <iframe id="vert-frame" class="stream-frame" style="display:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
-      </div>
-    </div>
-  </div>
-</div>
+    // Track currently active video IDs
+    let activeVideoIds = { horiz: null, vert: null };
 
-<script>
-  const STORE_KEY = 'streamhub_v4';
-  let cfg = {};
-  let pollTimer = null;
-  let viewRefreshTimer = null;
-  let activeKeyIndex = 0;
+    function save() { localStorage.setItem(STORE_KEY, JSON.stringify(cfg)); }
+    function loadCfg() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; } }
 
-  // Track currently active video IDs
-  let activeVideoIds = { horiz: null, vert: null };
+    window.onload = () => {
+      cfg = loadCfg();
+      if (cfg.ytChannelId || cfg.manualHoriz || cfg.manualVert) {
+        restoreForm();
+        applyConfig();
+        document.getElementById('setup-overlay').classList.add('hidden');
+      }
+      initDrag();
+    };
 
-  function save() { localStorage.setItem(STORE_KEY, JSON.stringify(cfg)); }
-  function loadCfg() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; } }
+    function restoreForm() {
+      document.getElementById('yt-channel-id').value = cfg.ytChannelId || '';
+      document.getElementById('yt-api-keys').value = (cfg.ytApiKeys || []).join('\n');
+      document.getElementById('manual-horiz').value = cfg.manualHoriz || '';
+      document.getElementById('manual-vert').value = cfg.manualVert || '';
+    }
 
-  window.onload = () => {
-    cfg = loadCfg();
-    if (cfg.ytChannelId || cfg.manualHoriz || cfg.manualVert) {
-      restoreForm();
+    function showSetup() { restoreForm(); document.getElementById('setup-overlay').classList.remove('hidden'); }
+
+    function launchDashboard() {
+      const keys = document.getElementById('yt-api-keys').value.split('\n').map(k => k.trim()).filter(k => k);
+      cfg = {
+        ytChannelId: document.getElementById('yt-channel-id').value.trim(),
+        ytApiKeys: keys,
+        manualHoriz: extractVideoId(document.getElementById('manual-horiz').value.trim()),
+        manualVert: extractVideoId(document.getElementById('manual-vert').value.trim()),
+      };
+      activeKeyIndex = 0;
+      save();
       applyConfig();
       document.getElementById('setup-overlay').classList.add('hidden');
     }
-    initDrag();
-  };
 
-  function restoreForm() {
-    document.getElementById('yt-channel-id').value = cfg.ytChannelId || '';
-    document.getElementById('yt-api-keys').value = (cfg.ytApiKeys || []).join('\n');
-    document.getElementById('manual-horiz').value = cfg.manualHoriz || '';
-    document.getElementById('manual-vert').value = cfg.manualVert || '';
-  }
+    function extractVideoId(input) {
+      if (!input) return '';
+      const match = input.match(/(?:v=|\/embed\/|shorts\/|\.be\/)([^&?#]+)/);
+      return match ? match[1] : input;
+    }
 
-  function showSetup() { restoreForm(); document.getElementById('setup-overlay').classList.remove('hidden'); }
+    // Wrapper to handle API rotation automatically
+    async function fetchWithRotation(url) {
+      const keys = cfg.ytApiKeys || [];
+      if (keys.length === 0) throw new Error("No keys");
 
-  function launchDashboard() {
-    const keys = document.getElementById('yt-api-keys').value.split('\n').map(k => k.trim()).filter(k => k);
-    cfg = {
-      ytChannelId: document.getElementById('yt-channel-id').value.trim(),
-      ytApiKeys: keys,
-      manualHoriz: extractVideoId(document.getElementById('manual-horiz').value.trim()),
-      manualVert: extractVideoId(document.getElementById('manual-vert').value.trim()),
-    };
-    activeKeyIndex = 0;
-    save();
-    applyConfig();
-    document.getElementById('setup-overlay').classList.add('hidden');
-  }
+      for (let i = 0; i < keys.length; i++) {
+        const currentKey = keys[activeKeyIndex];
+        try {
+          const res = await fetch(`${url}&key=${currentKey}`);
+          const data = await res.json();
 
-  function extractVideoId(input) {
-    if (!input) return '';
-    const match = input.match(/(?:v=|\/embed\/|shorts\/|\.be\/)([^&?#]+)/);
-    return match ? match[1] : input;
-  }
-
-  // Wrapper to handle API rotation automatically
-  async function fetchWithRotation(url) {
-    const keys = cfg.ytApiKeys || [];
-    if (keys.length === 0) throw new Error("No keys");
-
-    for (let i = 0; i < keys.length; i++) {
-      const currentKey = keys[activeKeyIndex];
-      try {
-        const res = await fetch(`${url}&key=${currentKey}`);
-        const data = await res.json();
-
-        if (data.error && data.error.code === 403) {
+          if (data.error && data.error.code === 403) {
+            activeKeyIndex = (activeKeyIndex + 1) % keys.length;
+            continue;
+          }
+          return data;
+        } catch (err) {
           activeKeyIndex = (activeKeyIndex + 1) % keys.length;
-          continue; 
         }
-        return data;
-      } catch (err) {
-        activeKeyIndex = (activeKeyIndex + 1) % keys.length;
       }
+      throw new Error("All keys exhausted");
     }
-    throw new Error("All keys exhausted");
-  }
 
-  async function fetchViewCount(videoId, type) {
-    if (!videoId || !cfg.ytApiKeys?.length) return;
-    try {
-      const url = `https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${videoId}`;
-      const data = await fetchWithRotation(url);
-      const count = data.items?.[0]?.liveStreamingDetails?.concurrentViewers;
-      const el = document.getElementById(`views-${type}`);
-      el.textContent = count ? `👁 ${Number(count).toLocaleString()}` : '';
-    } catch {}
-  }
-
-  function refreshAllViewCounts() {
-    if (activeVideoIds.horiz) fetchViewCount(activeVideoIds.horiz, 'horiz');
-    if (activeVideoIds.vert) fetchViewCount(activeVideoIds.vert, 'vert');
-  }
-
-  function startViewRefresh() {
-    if (viewRefreshTimer) clearInterval(viewRefreshTimer);
-    viewRefreshTimer = setInterval(refreshAllViewCounts, 15000);
-  }
-
-  function applyConfig() {
-    if (cfg.ytChannelId && cfg.ytApiKeys?.length) {
-      fetchLiveStreams();
-      if (pollTimer) clearInterval(pollTimer);
-    } else {
-      if (cfg.manualHoriz) updatePanels('horiz', cfg.manualHoriz);
-      if (cfg.manualVert) updatePanels('vert', cfg.manualVert);
+    async function fetchViewCount(videoId, type) {
+      if (!videoId || !cfg.ytApiKeys?.length) return;
+      try {
+        const url = `https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${videoId}`;
+        const data = await fetchWithRotation(url);
+        const count = data.items?.[0]?.liveStreamingDetails?.concurrentViewers;
+        const el = document.getElementById(`views-${type}`);
+        el.textContent = count ? `👁 ${Number(count).toLocaleString()}` : '';
+      } catch { }
     }
-    startViewRefresh();
-  }
 
-  async function fetchLiveStreams() {
-    const { ytChannelId } = cfg;
-    setStatus(`⟳ Syncing...`);
-    try {
-      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${ytChannelId}&eventType=live&type=video&maxResults=3`;
-      const data = await fetchWithRotation(url);
-      
-      if (data.items && data.items.length > 0) {
-        updatePanels('horiz', data.items[0].id.videoId);
-        if (data.items[1]) updatePanels('vert', data.items[1].id.videoId);
-        setStatus(`✓ Active Key: ${activeKeyIndex + 1}`);
+    function refreshAllViewCounts() {
+      if (activeVideoIds.horiz) fetchViewCount(activeVideoIds.horiz, 'horiz');
+      if (activeVideoIds.vert) fetchViewCount(activeVideoIds.vert, 'vert');
+    }
+
+    function startViewRefresh() {
+      if (viewRefreshTimer) clearInterval(viewRefreshTimer);
+      viewRefreshTimer = setInterval(refreshAllViewCounts, 15000);
+    }
+
+    function applyConfig() {
+      if (cfg.ytChannelId && cfg.ytApiKeys?.length) {
+        fetchLiveStreams();
+        if (pollTimer) clearInterval(pollTimer);
       } else {
-        setStatus('○ No Live Streams');
         if (cfg.manualHoriz) updatePanels('horiz', cfg.manualHoriz);
         if (cfg.manualVert) updatePanels('vert', cfg.manualVert);
       }
-    } catch(e) { setStatus('✗ Keys Exhausted'); }
-  }
-
-  function swapStreams() {
-    const horizFrame = document.getElementById('horiz-frame');
-    const vertFrame = document.getElementById('vert-frame');
-    const chatHorizFrame = document.getElementById('chat-horiz-frame');
-    const chatVertFrame = document.getElementById('chat-vert-frame');
-
-    const tmpVideo = horizFrame.src;
-    const tmpChat = chatHorizFrame.src;
-
-    horizFrame.src = vertFrame.src;
-    vertFrame.src = tmpVideo;
-    chatHorizFrame.src = chatVertFrame.src;
-    chatVertFrame.src = tmpChat;
-
-    const tmpId = activeVideoIds.horiz;
-    activeVideoIds.horiz = activeVideoIds.vert;
-    activeVideoIds.vert = tmpId;
-    refreshAllViewCounts();
-  }
-
-  function updatePanels(type, videoId) {
-    if (!videoId) return;
-
-    const vFrame = document.getElementById(`${type}-frame`);
-    const cFrame = document.getElementById(`chat-${type}-frame`);
-    const vPlaceholder = document.getElementById(`${type}-placeholder`);
-
-    activeVideoIds[type] = videoId;
-
-    vFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&playsinline=1`;
-    cFrame.src = `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${window.location.hostname}&dark_theme=1`;
-
-    vFrame.style.display = 'block';
-    cFrame.style.display = 'block';
-    if (vPlaceholder) vPlaceholder.style.display = 'none';
-
-    fetchViewCount(videoId, type);
-  }
-
-  function setStatus(msg) { document.getElementById('fetch-status').textContent = msg; }
-  function refreshStreams() {
-    if (cfg.ytChannelId && cfg.ytApiKeys?.length) {
-      fetchLiveStreams();
-    } else {
-      if (cfg.manualHoriz) updatePanels('horiz', cfg.manualHoriz);
-      if (cfg.manualVert) updatePanels('vert', cfg.manualVert);
+      startViewRefresh();
     }
-  }
 
-  function initDrag() {
-    const vDrag = document.getElementById('v-drag'), hDrag = document.getElementById('h-drag');
-    const topPanel = document.getElementById('top-panel'), rightCol = document.getElementById('right-col');
-    const leftCol = document.getElementById('left-col'), appBody = document.getElementById('app-body');
+    async function fetchLiveStreams() {
+      const { ytChannelId } = cfg;
+      setStatus(`⟳ Syncing...`);
+      try {
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${ytChannelId}&eventType=live&type=video&maxResults=3`;
+        const data = await fetchWithRotation(url);
 
-    const handleV = (e) => {
-      appBody.classList.add('is-dragging');
-      vDrag.classList.add('dragging');
-      const onMove = (ev) => {
-        const y = ev.touches ? ev.touches[0].clientY : ev.clientY;
-        const rect = leftCol.getBoundingClientRect();
-        const percent = ((y - rect.top) / rect.height) * 100;
-        topPanel.style.height = Math.max(10, Math.min(90, percent)) + '%';
-      };
-      const onEnd = () => {
-        appBody.classList.remove('is-dragging');
-        vDrag.classList.remove('dragging');
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('touchmove', onMove);
-      };
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: false });
-      window.addEventListener('mouseup', onEnd, { once: true });
-      window.addEventListener('touchend', onEnd, { once: true });
-    };
+        if (data.items && data.items.length > 0) {
+          updatePanels('horiz', data.items[0].id.videoId);
+          if (data.items[1]) updatePanels('vert', data.items[1].id.videoId);
+          setStatus(`✓ Active Key: ${activeKeyIndex + 1}`);
+        } else {
+          setStatus('○ No Live Streams');
+          if (cfg.manualHoriz) updatePanels('horiz', cfg.manualHoriz);
+          if (cfg.manualVert) updatePanels('vert', cfg.manualVert);
+        }
+      } catch (e) { setStatus('✗ Keys Exhausted'); }
+    }
 
-    const handleH = (e) => {
-      appBody.classList.add('is-dragging');
-      hDrag.classList.add('dragging');
-      const onMove = (ev) => {
-        const x = ev.touches ? ev.touches[0].clientX : ev.clientX;
-        const totalW = window.innerWidth;
-        const percent = ((totalW - x) / totalW) * 100;
-        rightCol.style.width = Math.max(10, Math.min(80, percent)) + '%';
-      };
-      const onEnd = () => {
-        appBody.classList.remove('is-dragging');
-        hDrag.classList.remove('dragging');
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('touchmove', onMove);
-      };
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, { passive: false });
-      window.addEventListener('mouseup', onEnd, { once: true });
-      window.addEventListener('touchend', onEnd, { once: true });
-    };
+    function swapStreams() {
+      const horizFrame = document.getElementById('horiz-frame');
+      const vertFrame = document.getElementById('vert-frame');
+      const chatHorizFrame = document.getElementById('chat-horiz-frame');
+      const chatVertFrame = document.getElementById('chat-vert-frame');
 
-    vDrag.addEventListener('mousedown', handleV);
-    vDrag.addEventListener('touchstart', handleV, { passive: false });
-    hDrag.addEventListener('mousedown', handleH);
-    hDrag.addEventListener('touchstart', handleH, { passive: false });
-  }
-</script>
+      const tmpVideo = horizFrame.src;
+      const tmpChat = chatHorizFrame.src;
+
+      horizFrame.src = vertFrame.src;
+      vertFrame.src = tmpVideo;
+      chatHorizFrame.src = chatVertFrame.src;
+      chatVertFrame.src = tmpChat;
+
+      const tmpId = activeVideoIds.horiz;
+      activeVideoIds.horiz = activeVideoIds.vert;
+      activeVideoIds.vert = tmpId;
+      refreshAllViewCounts();
+    }
+
+    function updatePanels(type, videoId) {
+      if (!videoId) return;
+
+      const vFrame = document.getElementById(`${type}-frame`);
+      const cFrame = document.getElementById(`chat-${type}-frame`);
+      const vPlaceholder = document.getElementById(`${type}-placeholder`);
+
+      activeVideoIds[type] = videoId;
+
+      vFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&playsinline=1`;
+      cFrame.src = `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${window.location.hostname}&dark_theme=1`;
+
+      vFrame.style.display = 'block';
+      cFrame.style.display = 'block';
+      if (vPlaceholder) vPlaceholder.style.display = 'none';
+
+      fetchViewCount(videoId, type);
+    }
+
+    function setStatus(msg) { document.getElementById('fetch-status').textContent = msg; }
+    function refreshStreams() {
+      if (cfg.ytChannelId && cfg.ytApiKeys?.length) {
+        fetchLiveStreams();
+      } else {
+        if (cfg.manualHoriz) updatePanels('horiz', cfg.manualHoriz);
+        if (cfg.manualVert) updatePanels('vert', cfg.manualVert);
+      }
+    }
+
+    function initDrag() {
+      const vDrag = document.getElementById('v-drag'), hDrag = document.getElementById('h-drag');
+      const topPanel = document.getElementById('top-panel'), rightCol = document.getElementById('right-col');
+      const leftCol = document.getElementById('left-col'), appBody = document.getElementById('app-body');
+
+      const handleV = (e) => {
+        appBody.classList.add('is-dragging');
+        vDrag.classList.add('dragging');
+        const onMove = (ev) => {
+          const y = ev.touches ? ev.touches[0].clientY : ev.clientY;
+          const rect = leftCol.getBoundingClientRect();
+          const percent = ((y - rect.top) / rect.height) * 100;
+          topPanel.style.height = Math.max(10, Math.min(90, percent)) + '%';
+        };
+        const onEnd = () => {
+          appBody.classList.remove('is-dragging');
+          vDrag.classList.remove('dragging');
+          window.removeEventListener('mousemove', onMove);
+          window.removeEventListener('touchmove', onMove);
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('mouseup', onEnd, { once: true });
+        window.addEventListener('touchend', onEnd, { once: true });
+      };
+
+      const handleH = (e) => {
+        appBody.classList.add('is-dragging');
+        hDrag.classList.add('dragging');
+        const onMove = (ev) => {
+          const x = ev.touches ? ev.touches[0].clientX : ev.clientX;
+          const totalW = window.innerWidth;
+          const percent = ((totalW - x) / totalW) * 100;
+          rightCol.style.width = Math.max(10, Math.min(80, percent)) + '%';
+        };
+        const onEnd = () => {
+          appBody.classList.remove('is-dragging');
+          hDrag.classList.remove('dragging');
+          window.removeEventListener('mousemove', onMove);
+          window.removeEventListener('touchmove', onMove);
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('mouseup', onEnd, { once: true });
+        window.addEventListener('touchend', onEnd, { once: true });
+      };
+
+      vDrag.addEventListener('mousedown', handleV);
+      vDrag.addEventListener('touchstart', handleV, { passive: false });
+      hDrag.addEventListener('mousedown', handleH);
+      hDrag.addEventListener('touchstart', handleH, { passive: false });
+    }
+  </script>
 </body>
+
 </html>
