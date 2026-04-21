@@ -227,6 +227,7 @@
   <span id="fetch-status">READY</span>
   <div class="topbar-right">
     <button class="btn-sm" onclick="refreshStreams()">↻ SYNC</button>
+    <button class="btn-sm" onclick="swapStreams()">⇄ SWAP</button>
     <button class="btn-sm" onclick="showSetup()">⚙ SETTINGS</button>
   </div>
 </div>
@@ -350,15 +351,36 @@
     } catch(e) { setStatus('✗ API Error'); }
   }
 
-  function updatePanels(type, videoId) {
-    const vFrame = document.getElementById(`${type}-frame`);
-    const cFrame = document.getElementById(`chat-${type}-frame`);
-    vFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0`;
-    cFrame.src = `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${window.location.hostname}&dark_theme=1`;
-    vFrame.style.display = 'block';
-    cFrame.style.display = 'block';
-  }
+  function swapStreams() {
+  const horizFrame = document.getElementById('horiz-frame');
+  const vertFrame = document.getElementById('vert-frame');
+  const chatHorizFrame = document.getElementById('chat-horiz-frame');
+  const chatVertFrame = document.getElementById('chat-vert-frame');
 
+  const tmpVideo = horizFrame.src;
+  const tmpChat = chatHorizFrame.src;
+
+  horizFrame.src = vertFrame.src;
+  vertFrame.src = tmpVideo;
+  chatHorizFrame.src = chatVertFrame.src;
+  chatVertFrame.src = tmpChat;
+}
+
+  function updatePanels(type, videoId) {
+  const vFrame = document.getElementById(`${type}-frame`);
+  const cFrame = document.getElementById(`chat-${type}-frame`);
+  const vPlaceholder = document.getElementById(`${type}-placeholder`);
+  const cPlaceholder = document.getElementById(`chat-${type}-placeholder`);
+
+  vFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&playsinline=1`;
+
+  cFrame.src = `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${window.location.hostname}&dark_theme=1&type=all`;
+
+  vFrame.style.display = 'block';
+  cFrame.style.display = 'block';
+  if (vPlaceholder) vPlaceholder.style.display = 'none';
+  if (cPlaceholder) cPlaceholder.style.display = 'none';
+}
   function setStatus(msg) { document.getElementById('fetch-status').textContent = msg; }
   function refreshStreams() { fetchLiveStreams(); }
 
